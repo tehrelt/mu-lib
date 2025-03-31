@@ -35,12 +35,13 @@ func (r *RabbitMqManager) Consume(ctx context.Context, rk string, fn ConsumeFn) 
 
 		t := otel.Tracer(tracer.TracerKey)
 		ctx, span := t.Start(ctx, fmt.Sprintf("Consume %s", rk))
-		defer span.End()
 
 		slog.Debug("consuming message", slog.Any("headers", msg.Headers))
 		if err := fn(ctx, msg); err != nil {
 			return err
 		}
+
+		span.End()
 	}
 
 	return nil
