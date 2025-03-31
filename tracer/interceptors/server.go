@@ -25,7 +25,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			md = metadata.New(nil)
 		}
 
-		propagator := otel.GetTextMapPropagator()
+		propagator := propagation.TraceContext{}
 		ctx = propagator.Extract(ctx, &metadataSupplier{metadata: &md})
 
 		slog.Info("incoming request", slog.String("method", info.FullMethod), slog.Any("metadata", md))
