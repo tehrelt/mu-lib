@@ -3,6 +3,8 @@ module github.com/tehrelt/mu-lib
 go 1.24.0
 
 require (
+	github.com/google/uuid v1.6.0
+	github.com/jackc/pgx v3.6.2+incompatible
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.35.0
 	go.opentelemetry.io/otel/sdk v1.35.0
@@ -12,12 +14,15 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
-	github.com/jackc/pgx v3.6.2+incompatible // indirect
+	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
