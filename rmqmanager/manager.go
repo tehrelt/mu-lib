@@ -49,6 +49,10 @@ func (r *RabbitMqManager) Consume(ctx context.Context, rk string, fn ConsumeFn) 
 
 func (r *RabbitMqManager) Publish(ctx context.Context, exchange, rk string, msg []byte) error {
 
+	t := otel.Tracer(tracer.TracerKey)
+	ctx, span := t.Start(ctx, fmt.Sprintf("Publish %s", rk))
+	defer span.End()
+
 	headers := make(amqp091.Table)
 
 	propagator := propagation.TraceContext{}
