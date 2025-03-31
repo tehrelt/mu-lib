@@ -30,9 +30,8 @@ func (r *RabbitMqManager) Consume(ctx context.Context, rk string, fn ConsumeFn) 
 	}
 
 	for msg := range messages {
-		headers := make(amqp091.Table)
 		p := propagation.TraceContext{}
-		ctx = p.Extract(ctx, &amqpTableCarrier{table: &headers})
+		ctx = p.Extract(ctx, &amqpTableCarrier{table: &msg.Headers})
 
 		t := otel.Tracer(tracer.TracerKey)
 		ctx, span := t.Start(ctx, fmt.Sprintf("Consume %s", rk))

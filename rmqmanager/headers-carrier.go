@@ -7,7 +7,12 @@ type amqpTableCarrier struct {
 }
 
 func (c *amqpTableCarrier) Get(key string) string {
-	return (*c.table)[key].(string)
+	val, ok := (*c.table)[key]
+	if !ok {
+		return ""
+	}
+
+	return val.(string)
 }
 
 func (c *amqpTableCarrier) Set(key, value string) {
