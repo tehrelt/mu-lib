@@ -18,7 +18,7 @@ import (
 )
 
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		startTime := time.Now()
 
 		md, ok := metadata.FromIncomingContext(ctx)
@@ -48,7 +48,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		)
 		defer span.End()
 
-		resp, err := handler(ctx, req)
+		resp, err = handler(ctx, req)
 		if err != nil {
 			if e, ok := status.FromError(err); ok {
 				span.SetStatus(codes.Error, e.Message())
@@ -58,6 +58,12 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 			span.RecordError(err)
 		}
+
+		slog.Debug(
+			"[mu-lib] response recieved",
+			slog.Any("response", resp),
+			slog.Any("err", err),
+		)
 
 		defer func() {
 			span.SetAttributes(

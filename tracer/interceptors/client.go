@@ -29,26 +29,32 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 		}
 
 		propagator := propagation.TraceContext{}
-		propagator.Inject(ctx, &metadataSupplier{metadata: &md})
+		carrier := propagation.MapCarrier{}
+		propagator.Inject(ctx, carrier)
+		for k, v := range carrier {
+			md.Set(k, v)
+		}
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
-
 		payload, err := json.Marshal(req)
 		if err != nil {
 			return err
 		}
 
-		if err := invoker(ctx, method, req, reply, cc, opts...); err != nil {
+		err = invoker(ctx, method, req, reply, cc, opts...)
+		if err != nil {
 			span.RecordError(err)
 		}
 
-		span.SetAttributes(
-			attribute.String("rpc.method", method),
-			attribute.String("rpc.system", "grpc"),
-			attribute.String("rpc.peer_address", cc.Target()),
-			attribute.Int64("rpc.duration_ms", time.Since(start).Milliseconds()),
-			attribute.String("rpc.payload", string(payload)),
-		)
+		defer func() {
+			span.SetAttributes(
+				attribute.String("rpc.system", "grpc"),
+				attribute.String("rpc.method", method),
+				attribute.String("rpc.peer_address", cc.Target()),
+				attribute.Int64("rpc.duration_ms", time.Since(start).Milliseconds()),
+				attribute.String("rpc.payload", string(payload)),
+			)
+		}()
 
 		return err
 	}
