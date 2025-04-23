@@ -70,8 +70,7 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 		if !ok {
 			md = metadata.New(nil)
 		}
-
-		propagator := otel.GetTextMapPropagator()
+		propagator := propagation.TraceContext{}
 		propagator.Inject(ctx, &metadataSupplier{metadata: &md})
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
