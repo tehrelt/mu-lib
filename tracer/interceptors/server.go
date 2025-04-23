@@ -57,18 +57,19 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			}
 
 			span.RecordError(err)
-
-			return nil, err
-		}
-
-		respjson, err := json.Marshal(resp)
-		if err != nil {
-			return nil, err
 		}
 
 		defer func() {
 			span.SetAttributes(
 				attribute.Int64("rpc.duration_ms", time.Since(startTime).Milliseconds()),
+			)
+
+			respjson, err := json.Marshal(resp)
+			if err != nil {
+				return
+			}
+
+			span.SetAttributes(
 				attribute.String("rpc.response", string(respjson)),
 			)
 		}()

@@ -33,14 +33,13 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 
-		err := invoker(ctx, method, req, reply, cc, opts...)
-		if err != nil {
-			span.RecordError(err)
-		}
-
 		payload, err := json.Marshal(req)
 		if err != nil {
 			return err
+		}
+
+		if err := invoker(ctx, method, req, reply, cc, opts...); err != nil {
+			span.RecordError(err)
 		}
 
 		span.SetAttributes(
