@@ -2,6 +2,7 @@ package interceptors
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
 
@@ -30,6 +31,11 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		slog.Info("incoming request", slog.String("method", info.FullMethod), slog.Any("metadata", md))
 
+		payload, err := json.Marshal(req)
+		if err != nil {
+			return nil, err
+		}
+
 		t := otel.Tracer(tracer.TracerKey)
 		ctx, span := t.Start(
 			ctx,
@@ -37,6 +43,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			trace.WithSpanKind(trace.SpanKindServer),
 			trace.WithAttributes(
 				attribute.String("rpc.service", info.FullMethod),
+				attribute.String("rpc.payload", string(payload)),
 			),
 		)
 		defer span.End()
