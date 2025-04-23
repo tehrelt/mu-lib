@@ -57,6 +57,8 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			}
 
 			span.RecordError(err)
+
+			return nil, err
 		}
 
 		respjson, err := json.Marshal(resp)
