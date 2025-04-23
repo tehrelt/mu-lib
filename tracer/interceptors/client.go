@@ -2,6 +2,7 @@ package interceptors
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/tehrelt/mu-lib/tracer"
@@ -37,11 +38,17 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 			span.RecordError(err)
 		}
 
+		payload, err := json.Marshal(req)
+		if err != nil {
+			return err
+		}
+
 		span.SetAttributes(
 			attribute.String("rpc.method", method),
 			attribute.String("rpc.system", "grpc"),
 			attribute.String("rpc.peer_address", cc.Target()),
 			attribute.Int64("rpc.duration_ms", time.Since(start).Milliseconds()),
+			attribute.String("rpc.payload", string(payload)),
 		)
 
 		return err
