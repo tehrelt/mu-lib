@@ -75,8 +75,13 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 		if !ok {
 			md = metadata.New(nil)
 		}
+
 		propagator := propagation.TraceContext{}
-		propagator.Inject(ctx, &metadataSupplier{metadata: &md})
+		carrier := propagation.MapCarrier{}
+		propagator.Inject(ctx, carrier)
+		for k, v := range carrier {
+			md.Set(k, v)
+		}
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 
