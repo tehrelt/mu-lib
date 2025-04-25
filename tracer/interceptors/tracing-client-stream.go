@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -21,6 +22,7 @@ type tracingClientStream struct {
 }
 
 func (s *tracingClientStream) end() {
+	slog.Debug("[mu-lib] closing span")
 	s.span.End()
 	s.span.SetAttributes(
 		attribute.Int64("rpc.duration_ms", time.Since(s.start).Milliseconds()),
