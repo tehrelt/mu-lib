@@ -27,7 +27,14 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		propagator := propagation.TraceContext{}
-		ctx = propagator.Extract(ctx, &metadataSupplier{metadata: &md})
+		carrier := propagation.MapCarrier{}
+		for k, v := range md {
+			if len(v) > 0 {
+				carrier[k] = v[0]
+			}
+		}
+
+		ctx = propagator.Extract(ctx, carrier)
 
 		slog.Info("incoming request", slog.String("method", info.FullMethod), slog.Any("metadata", md))
 
@@ -97,7 +104,14 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 
 		// Extract the span context from the metadata
 		propagator := propagation.TraceContext{}
-		ctx = propagator.Extract(ctx, &metadataSupplier{metadata: &md})
+		carrier := propagation.MapCarrier{}
+		for k, v := range md {
+			if len(v) > 0 {
+				carrier[k] = v[0]
+			}
+		}
+
+		ctx = propagator.Extract(ctx, carrier)
 
 		// Start a new span
 		t := otel.Tracer(tracer.TracerKey)

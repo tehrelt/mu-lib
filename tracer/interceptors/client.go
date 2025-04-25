@@ -65,12 +65,6 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		start := time.Now()
 
-		ctx, span := otel.Tracer(tracer.TracerKey).Start(
-			ctx,
-			method,
-			trace.WithSpanKind(trace.SpanKindClient),
-		)
-
 		md, ok := metadata.FromOutgoingContext(ctx)
 		if !ok {
 			md = metadata.New(nil)
@@ -82,6 +76,12 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 		for k, v := range carrier {
 			md.Set(k, v)
 		}
+
+		ctx, span := otel.Tracer(tracer.TracerKey).Start(
+			ctx,
+			method,
+			trace.WithSpanKind(trace.SpanKindClient),
+		)
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 
@@ -97,12 +97,12 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 			attribute.String("rpc.method", method),
 			attribute.String("rpc.system", "grpc"),
 			attribute.String("rpc.peer_address", cc.Target()),
-			attribute.Int64("rpc.duration_ms", time.Since(start).Milliseconds()),
 		)
 
 		return &tracingClientStream{
 			ClientStream: stream,
 			span:         span,
+			start:        start,
 		}, nil
 	}
 }
