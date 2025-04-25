@@ -44,7 +44,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 
 		if debug {
 			slog.Debug(
-				"Outcoming request",
+				"[UnaryClientInterceptor]",
 				slog.String("rpc.method", method),
 				slog.Any("rpc.payload", req),
 				slog.Any("rpc.metadata", md),
@@ -80,6 +80,12 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 			md = metadata.New(nil)
 		}
 
+		ctx, span := otel.Tracer(tracer.TracerKey).Start(
+			ctx,
+			method,
+			trace.WithSpanKind(trace.SpanKindClient),
+		)
+
 		propagator := propagation.TraceContext{}
 		carrier := propagation.MapCarrier{}
 		propagator.Inject(ctx, carrier)
@@ -87,11 +93,13 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 			md.Set(k, v)
 		}
 
-		ctx, span := otel.Tracer(tracer.TracerKey).Start(
-			ctx,
-			method,
-			trace.WithSpanKind(trace.SpanKindClient),
-		)
+		if debug {
+			slog.Debug(
+				"[StreamClientInterceptor]",
+				slog.String("rpc.method", method),
+				slog.Any("rpc.metadata", md),
+			)
+		}
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 
