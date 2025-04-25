@@ -111,6 +111,15 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			}
 		}
 
+		if debug {
+			slog.Debug(
+				"[StreamServerInterceptor]",
+				slog.String("info.FullMethod", info.FullMethod),
+				slog.Any("metadata", md),
+				slog.Any("carrier", carrier),
+			)
+		}
+
 		ctx = propagator.Extract(ctx, carrier)
 
 		// Start a new span
