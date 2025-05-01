@@ -3,7 +3,6 @@ package interceptors
 import (
 	"context"
 	"encoding/json"
-	"log/slog"
 	"time"
 
 	"github.com/tehrelt/mu-lib/tracer"
@@ -36,8 +35,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		ctx = propagator.Extract(ctx, carrier)
 
-		slog.Info("incoming request", slog.String("method", info.FullMethod), slog.Any("metadata", md))
-
 		payload, err := json.Marshal(req)
 		if err != nil {
 			return nil, err
@@ -65,12 +62,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 			span.RecordError(err)
 		}
-
-		slog.Debug(
-			"[mu-lib] response recieved",
-			slog.Any("response", resp),
-			slog.Any("err", err),
-		)
 
 		defer func() {
 			span.SetAttributes(
@@ -109,15 +100,6 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			if len(v) > 0 {
 				carrier[k] = v[0]
 			}
-		}
-
-		if debug {
-			slog.Debug(
-				"[StreamServerInterceptor]",
-				slog.String("info.FullMethod", info.FullMethod),
-				slog.Any("metadata", md),
-				slog.Any("carrier", carrier),
-			)
 		}
 
 		ctx = propagator.Extract(ctx, carrier)

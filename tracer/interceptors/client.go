@@ -3,7 +3,6 @@ package interceptors
 import (
 	"context"
 	"encoding/json"
-	"log/slog"
 	"time"
 
 	"github.com/tehrelt/mu-lib/tracer"
@@ -40,15 +39,6 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 		payload, err := json.Marshal(req)
 		if err != nil {
 			return err
-		}
-
-		if debug {
-			slog.Debug(
-				"[UnaryClientInterceptor]",
-				slog.String("rpc.method", method),
-				slog.Any("rpc.payload", req),
-				slog.Any("rpc.metadata", md),
-			)
 		}
 
 		err = invoker(ctx, method, req, reply, cc, opts...)
@@ -91,14 +81,6 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 		propagator.Inject(ctx, carrier)
 		for k, v := range carrier {
 			md.Set(k, v)
-		}
-
-		if debug {
-			slog.Debug(
-				"[StreamClientInterceptor]",
-				slog.String("rpc.method", method),
-				slog.Any("rpc.metadata", md),
-			)
 		}
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
